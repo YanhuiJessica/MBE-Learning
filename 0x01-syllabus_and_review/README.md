@@ -1,4 +1,65 @@
 ## [OverTheWire: Bandit](https://overthewire.org/wargames/bandit/)
+### Contents
+
+<table>
+<thead>
+  <tr>
+    <th colspan="10"><i>Level 0 - 9</i></th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td><a href="#level-0">0</a></td>
+    <td><a href="#level-1">1</a></td>
+    <td><a href="#level-2">2</a></td>
+    <td><a href="#level-3">3</a></td>
+    <td><a href="#level-4">4</a></td>
+    <td><a href="#level-5">5</a></td>
+    <td><a href="#level-6">6</a></td>
+    <td><a href="#level-7">7</a></td>
+    <td><a href="#level-8">8</a></td>
+    <td><a href="#level-9">9</a></td>
+  </tr>
+</tbody>
+<thead>
+  <tr>
+    <th colspan="10"><i>Level 10 - 19</i></th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td><a href="#level-10">10</a></td>
+    <td><a href="#level-11">11</a></td>
+    <td><a href="#level-12">12</a></td>
+    <td><a href="#level-13">13</a></td>
+    <td><a href="#level-14">14</a></td>
+    <td><a href="#level-15">15</a></td>
+    <td><a href="#level-16">16</a></td>
+    <td><a href="#level-17">17</a></td>
+    <td><a href="#level-18">18</a></td>
+    <td><a href="#level-19">19</a></td>
+  </tr>
+</tbody>
+<thead>
+  <tr>
+    <th colspan="10"><i>Level 20 - 29</i></th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td><a href="#level-20">20</a></td>
+    <td><a href="#level-21">21</a></td>
+    <td><a href="#level-22">22</a></td>
+    <td><a href="#level-23">23</a></td>
+    <td><a href="#level-24">24</a></td>
+    <td><a href="#level-25">25</a></td>
+    <td><a href="#level-26">26</a></td>
+    <td><a href="#level-27">27</a></td>
+    <td><a href="#level-28">28</a></td>
+    <td><a href="#level-29">29</a></td>
+  </tr>
+</tbody>
+</table>
 
 ### Level 0
 
@@ -426,3 +487,364 @@ gE269g2h3mw3pwgrj0Ha9Uoqen1c9DGr
 ```
 
 参考：[nc(1) [linux man page]](https://www.unix.com/man-page/linux/1/nc/)
+
+### Level 21
+
+A program is running automatically at regular intervals from **cron**, the time-based job scheduler. Look in **/etc/cron.d/** for the configuration and see what command is being executed.
+
+```bash
+$ ssh bandit21@bandit.labs.overthewire.org -p 2220
+
+$ cd /etc/cron.d
+$ ls
+cronjob_bandit15_root  cronjob_bandit22  cronjob_bandit24
+cronjob_bandit17_root  cronjob_bandit23  cronjob_bandit25_root
+
+# The jobs in cron.d and /etc/crontab are system jobs, which are used usually for more than one user, thus, additionally the username is needed.
+$ cat cronjob_bandit22
+@reboot bandit22 /usr/bin/cronjob_bandit22.sh &> /dev/null
+# @reboot: Run once after reboot.
+* * * * * bandit22 /usr/bin/cronjob_bandit22.sh &> /dev/null
+# * * * * *: 每分钟执行一次
+
+$ cat /usr/bin/cronjob_bandit22.sh
+#!/bin/bash
+chmod 644 /tmp/t7O6lds9S0RqQh9aMcz6ShpAoZKF7fgv
+cat /etc/bandit_pass/bandit22 > /tmp/t7O6lds9S0RqQh9aMcz6ShpAoZKF7fgv
+# 权限位 644，其他人有读的权限
+
+$ cat /tmp/t7O6lds9S0RqQh9aMcz6ShpAoZKF7fgv
+Yk7owGAcWjwMVRwrTesJEwB7WVOiILLI
+```
+
+参考：[crontab(5) — Linux manual page](https://www.man7.org/linux/man-pages/man5/crontab.5.html)
+
+### Level 22
+
+```bash
+$ ssh bandit22@bandit.labs.overthewire.org -p 2220
+$ cd /etc/cron.d
+$ ls
+cronjob_bandit15_root  cronjob_bandit22  cronjob_bandit24
+cronjob_bandit17_root  cronjob_bandit23  cronjob_bandit25_root
+$ cat cronjob_bandit23
+@reboot bandit23 /usr/bin/cronjob_bandit23.sh  &> /dev/null
+* * * * * bandit23 /usr/bin/cronjob_bandit23.sh  &> /dev/null
+
+$ cat /usr/bin/cronjob_bandit23.sh
+#!/bin/bash
+
+myname=$(whoami)  # bandit23
+mytarget=$(echo I am user $myname | md5sum | cut -d ' ' -f 1)
+
+echo "Copying passwordfile /etc/bandit_pass/$myname to /tmp/$mytarget"
+
+cat /etc/bandit_pass/$myname > /tmp/$mytarget
+
+$ echo I am user bandit23 | md5sum | cut -d ' ' -f 1
+8ca319486bfbbc3663ea0fbe81326349
+$ cat /tmp/8ca319486bfbbc3663ea0fbe81326349
+jc1udXuA1tiHqjIsL8yaapX5XIAI6i0n
+```
+
+### Level 23
+
+**NOTE:** This level requires you to create your own first shell-script.
+
+```bash
+$ ssh bandit23@bandit.labs.overthewire.org -p 2220
+$ cd /etc/cron.d
+$ ls
+cronjob_bandit15_root  cronjob_bandit22  cronjob_bandit24
+cronjob_bandit17_root  cronjob_bandit23  cronjob_bandit25_root
+$ cat cronjob_bandit24
+@reboot bandit24 /usr/bin/cronjob_bandit24.sh &> /dev/null
+* * * * * bandit24 /usr/bin/cronjob_bandit24.sh &> /dev/null
+
+$ cat /usr/bin/cronjob_bandit24.sh
+#!/bin/bash
+
+myname=$(whoami)
+
+cd /var/spool/$myname
+echo "Executing and deleting all scripts in /var/spool/$myname:"
+for i in * .*;
+do
+    if [ "$i" != "." -a "$i" != ".." ];
+    then
+        echo "Handling $i"
+        owner="$(stat --format "%U" ./$i)"
+        if [ "${owner}" = "bandit23" ]; then
+            timeout -s 9 60 ./$i    # 所有者为 bandit23 的脚本会被执行
+        fi
+        rm -f ./$i
+    fi
+done
+
+$ touch /tmp/chicken
+$ chmod 666 /tmp/chicken
+$ vi /tmp/get_pass.sh
+#!/bin/bash
+cat /etc/bandit_pass/bandit24 > /tmp/chicken
+
+# 不加可执行位还跑什么脚本！(╬ΦдΦ)
+$ chmod +x /tmp/get_pass.sh
+$ cp /tmp/get_pass.sh /var/spool/bandit24
+# One minute later
+$ cat /tmp/chicken
+UoMYTrfrBFHyQXmg6gzctqAwOmw1IohZ
+
+$ rm /tmp/chicken
+```
+
+### Level 24
+
+A daemon is listening on port 30002 and will give you the password for bandit25 if **given the password for bandit24 and a secret numeric 4-digit pincode**. There is no way to retrieve the pincode except by going through all of the 10000 combinations, called brute-forcing.
+
+```bash
+$ ssh bandit24@bandit.labs.overthewire.org -p 2220
+
+$ mkdir /tmp/chicken
+$ cd /tmp/chicken
+$ vi bruteforce.sh
+#!/bin/bash
+if [[ -e bruteforce.txt ]]; then
+    rm bruteforce.txt
+fi
+for i in $(seq -w 0 9999)
+do
+    echo UoMYTrfrBFHyQXmg6gzctqAwOmw1IohZ $i >> bruteforce.txt
+done
+nc localhost 30002 < bruteforce.txt | grep -v Wrong
+
+$ chmod +x bruteforce.sh
+$ ./bruteforce.sh
+I am the pincode checker for user bandit25. Please enter the password for user bandit24 and the secret pincode on a single line, separated by a space.
+Correct!
+The password of user bandit25 is uNG9O58gUE7snukf3bvZ0rxhtnjzSGzG
+
+Exiting.
+$ cd
+$ rm -r /tmp/chicken
+```
+
+### Level 25
+
+Logging in to bandit26 from bandit25 should be fairly easy… The shell for user bandit26 is not **/bin/bash**, but something else. Find out what it is, how it works and how to break out of it.
+
+```bash
+$ ssh bandit25@bandit.labs.overthewire.org -p 2220
+$ ls
+bandit26.sshkey
+$ ssh -i bandit26.sshkey bandit26@localhost
+...
+Enjoy your stay!
+
+  _                     _ _ _   ___   __
+ | |                   | (_) | |__ \ / /
+ | |__   __ _ _ __   __| |_| |_   ) / /_
+ | ’_ \ / _` | ’_ \ / _` | | __| / / ’_ \
+ | |_) | (_| | | | | (_| | | |_ / /| (_) |
+ |_.__/ \__,_|_| |_|\__,_|_|\__|____\___/
+Connection to localhost closed.
+$ grep bandit26 /etc/passwd
+bandit26:x:11026:11026:bandit level 26:/home/bandit26:/usr/bin/showtext
+$ cat /usr/bin/showtext
+#!/bin/sh
+
+export TERM=linux
+
+more ~/text.txt
+exit 0
+```
+调整终端窗口大小，以在 SSH 连接时触发`more`的浏览界面<br>
+![尽可能的调小](img/bandit26-ssh-login.jpg)
+使用`v`进入编辑模式，默认编辑器为 *vim*<br>
+接着使用`:e`命令打开密码文件：`:e /etc/bandit_pass/bandit26`<br>
+获得密码：`5czgV9L3Xx8JPOyRbXh6lQbmIOWvPT6Z`<br>
+![打开密码文件获得密码](img/bandit26-pass.jpg)
+
+参考：
+- [more(1) — Linux manual page](https://man7.org/linux/man-pages/man1/more.1.html)
+- [Vim: editing.txt](https://vimhelp.org/editing.txt.html)
+
+### Level 26
+
+*Level 25* 查看完密码后，不退出 *vim*（也可通过密码登录，再次进入 *vim*），通过`:set shell=/bin/bash`修改 *shell*，然后输入`:sh`就可以进入用户 bandit26 的 *shell* 了 XD
+```bash
+$ ls -l
+total 12
+-rwsr-x--- 1 bandit27 bandit26 7296 May  7 20:14 bandit27-do
+-rw-r----- 1 bandit26 bandit26  258 May  7 20:14 text.txt
+
+$ ./bandit27-do
+Run a command as another user.
+  Example: ./bandit27-do id
+
+$ ./bandit27-do cat /etc/bandit_pass/bandit27
+3ba3118a22e93127a4ed485be72ef5ea
+```
+
+参考：
+- [Vim: options.txt](https://vimhelp.org/options.txt.html)
+- [Vim: various.txt](https://vimhelp.org/various.txt.html)
+
+### Level 27
+
+There is a git repository at ssh://bandit27-git@localhost/home/bandit27-git/repo. The password for the user bandit27-git is the same as for the user bandit27.
+
+Clone the repository and find the password for the next level.
+
+```bash
+$ ssh bandit27@bandit.labs.overthewire.org -p 2220
+$ mkdir /tmp/chicken
+$ cd /tmp/chicken
+$ git clone ssh://bandit27-git@localhost/home/bandit27-git/repo
+$ cd repo/
+$ ls
+README
+$ cat README
+The password to the next level is: 0ef186ac70e04ea33b4c1853d2526fa2
+
+$ cd
+$ rm -rf /tmp/chicken
+```
+
+### Level 28
+
+```bash
+$ ssh bandit28@bandit.labs.overthewire.org -p 2220
+$ mkdir /tmp/chicken
+$ cd /tmp/chicken
+
+# The password for the user bandit28-git is the same as for the user bandit28
+$ git clone ssh://bandit28-git@localhost/home/bandit28-git/repo
+$ cd repo/
+$ ls
+README.md
+$ cat README.md
+# Bandit Notes
+Some notes for level29 of bandit.
+
+## credentials
+
+- username: bandit29
+- password: xxxxxxxxxx
+
+# shows the most recent commit on the current branch
+$ git show
+commit edd935d60906b33f0619605abd1689808ccdd5ee
+Author: Morla Porla <morla@overthewire.org>
+Date:   Thu May 7 20:14:49 2020 +0200
+
+    fix info leak
+
+diff --git a/README.md b/README.md
+index 3f7cee8..5c6457b 100644
+--- a/README.md
++++ b/README.md
+@@ -4,5 +4,5 @@ Some notes for level29 of bandit.
+ ## credentials
+
+ - username: bandit29
+-- password: bbc96594b4e001778eee9975372716b2
++- password: xxxxxxxxxx
+
+$ cd
+$ rm -rf /tmp/chicken
+```
+
+### Level 29
+
+```bash
+$ ssh bandit29@bandit.labs.overthewire.org -p 2220
+$ mkdir /tmp/chicken
+$ cd /tmp/chicken
+
+# The password for the user bandit29-git is the same as for the user bandit29
+$ git clone ssh://bandit29-git@localhost/home/bandit29-git/repo
+$ cd repo/
+$ ls
+README.md
+$ cat README.md
+# Bandit Notes
+Some notes for bandit30 of bandit.
+
+## credentials
+
+- username: bandit30
+- password: <no passwords in production!>
+
+$ git log
+commit 208f463b5b3992906eabf23c562eda3277fea912
+Author: Ben Dover <noone@overthewire.org>
+Date:   Thu May 7 20:14:51 2020 +0200
+
+    fix username
+
+commit 18a6fd6d5ef7f0874bbdda2fa0d77b3b81fd63f7
+Author: Ben Dover <noone@overthewire.org>
+Date:   Thu May 7 20:14:51 2020 +0200
+
+    initial commit of README.md
+
+$ git branch
+  list
+* master
+$ git branch -r
+  origin/HEAD -> origin/master
+  origin/dev
+  origin/master
+  origin/sploits-dev
+$ git checkout dev
+Branch dev set up to track remote branch dev from origin.
+Switched to a new branch 'dev'
+
+$ git log
+commit bc833286fca18a3948aec989f7025e23ffc16c07
+Author: Morla Porla <morla@overthewire.org>
+Date:   Thu May 7 20:14:52 2020 +0200
+
+    add data needed for development
+
+commit 8e6c203f885bd4cd77602f8b9a9ea479929ffa57
+Author: Ben Dover <noone@overthewire.org>
+Date:   Thu May 7 20:14:51 2020 +0200
+
+    add gif2ascii
+
+commit 208f463b5b3992906eabf23c562eda3277fea912
+Author: Ben Dover <noone@overthewire.org>
+Date:   Thu May 7 20:14:51 2020 +0200
+
+    fix username
+
+commit 18a6fd6d5ef7f0874bbdda2fa0d77b3b81fd63f7
+Author: Ben Dover <noone@overthewire.org>
+Date:   Thu May 7 20:14:51 2020 +0200
+
+    initial commit of README.md
+
+$ git show
+commit bc833286fca18a3948aec989f7025e23ffc16c07
+Author: Morla Porla <morla@overthewire.org>
+Date:   Thu May 7 20:14:52 2020 +0200
+
+    add data needed for development
+
+diff --git a/README.md b/README.md
+index 1af21d3..39b87a8 100644
+--- a/README.md
++++ b/README.md
+@@ -4,5 +4,5 @@ Some notes for bandit30 of bandit.
+ ## credentials
+
+ - username: bandit30
+-- password: <no passwords in production!>
++- password: 5b90576bedb2cc04c86a9e924ce42faf
+
+$ cd
+$ rm -rf /tmp/chicken
+```
+
+参考：[Git - git-branch Documentation](https://git-scm.com/docs/git-branch)
