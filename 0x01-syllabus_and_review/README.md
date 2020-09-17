@@ -658,7 +658,7 @@ more ~/text.txt
 exit 0
 ```
 调整终端窗口大小，以在 SSH 连接时触发`more`的浏览界面<br>
-![尽可能的调小](img/bandit26-ssh-login.jpg)
+![尽可能的调小](img/bandit26-ssh-login.jpg)<br>
 使用`v`进入编辑模式，默认编辑器为 *vim*<br>
 接着使用`:e`命令打开密码文件：`:e /etc/bandit_pass/bandit26`<br>
 获得密码：`5czgV9L3Xx8JPOyRbXh6lQbmIOWvPT6Z`<br>
