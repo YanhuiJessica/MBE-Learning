@@ -59,6 +59,25 @@
     <td><a href="#level-29">29</a></td>
   </tr>
 </tbody>
+<thead>
+  <tr>
+    <th colspan="10"><i>Level 30 - 39</i></th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td><a href="#level-30">30</a></td>
+    <td><a href="#level-31">31</a></td>
+    <td><a href="#level-32">32</a></td>
+    <td><a href="#"></a></td>
+    <td><a href="#"></a></td>
+    <td><a href="#"></a></td>
+    <td><a href="#"></a></td>
+    <td><a href="#"></a></td>
+    <td><a href="#"></a></td>
+    <td><a href="#"></a></td>
+  </tr>
+</tbody>
 </table>
 
 ### Level 0
@@ -848,3 +867,107 @@ $ rm -rf /tmp/chicken
 ```
 
 参考：[Git - git-branch Documentation](https://git-scm.com/docs/git-branch)
+
+### Level 30
+
+```bash
+$ ssh bandit30@bandit.labs.overthewire.org -p 2220
+$ mkdir /tmp/chicken
+$ cd /tmp/chicken
+
+# The password for the user bandit30-git is the same as for the user bandit30
+$ git clone ssh://bandit30-git@localhost/home/bandit30-git/repo
+$ cd repo/
+$ ls
+README.md
+$ cat README.md
+just an epmty file... muahaha
+
+$ git log
+commit 3aefa229469b7ba1cc08203e5d8fa299354c496b
+Author: Ben Dover <noone@overthewire.org>
+Date:   Thu May 7 20:14:54 2020 +0200
+
+    initial commit of README.md
+
+$ git tag
+secret
+$ git show secret
+47e603bb428404d265f59c42920d81e5
+
+$ cd
+$ rm -rf /tmp/chicken
+```
+
+参考：[Git - Tagging](https://git-scm.com/book/en/v2/Git-Basics-Tagging)
+
+### Level 31
+
+```bash
+$ ssh bandit31@bandit.labs.overthewire.org -p 2220
+$ mkdir /tmp/chicken
+$ cd /tmp/chicken
+
+# The password for the user bandit31-git is the same as for the user bandit31
+$ git clone ssh://bandit31-git@localhost/home/bandit31-git/repo
+$ cd repo/
+$ ls
+README.md
+$ cat README.md
+This time your task is to push a file to the remote repository.
+
+Details:
+    File name: key.txt
+    Content: 'May I come in?'
+    Branch: master
+$ echo May I come in? > key.txt
+$ git add key.txt
+The following paths are ignored by one of your .gitignore files:
+key.txt
+Use -f if you really want to add them.
+$ cat .gitignore
+*.txt
+$ git add -f key.txt
+$ git commit -m 'To get the key'
+[master 88024e7] To get the key
+ 1 file changed, 1 insertion(+)
+ create mode 100644 key.txt
+$ git push
+...
+remote: ### Attempting to validate files... ####
+remote:
+remote: .oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.
+remote:
+remote: Well done! Here is the password for the next level:
+remote: 56a9bf19c63d650ce78e6ec0354ee45e
+remote:
+remote: .oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.
+remote:
+...
+
+$ cd
+$ rm -rf /tmp/chicken
+```
+
+### Level 32
+
+After all this `git` stuff its time for another escape. Good luck!
+
+```bash
+$ ssh bandit32@bandit.labs.overthewire.org -p 2220
+
+WELCOME TO THE UPPERCASE SHELL
+>> ls
+sh: 1: LS: not found
+>> LS
+sh: 1: LS: not found
+
+# 脚本文件为 sh，使用 $0，$0 指代脚本文件本身
+>> $0
+$ pwd
+/home/bandit32
+$ ls
+uppershell
+$ cat /etc/bandit_pass/bandit33
+c9c3199ddf4121b10cf581a98d51caee
+```
