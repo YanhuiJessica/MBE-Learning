@@ -7,6 +7,35 @@
 - Kali Linux
 - GNU bash，版本 5.0.3(1)-release (x86_64-pc-linux-gnu)
 
+### Contents
+
+<table>
+<thead>
+  <tr>
+    <th colspan="2"><a href="#crackme0x00a">0x00a</a></th>
+    <th colspan="3"><a href="#crackme0x00b">0x00b</a></th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td><a href="#crackme0x01">0x01</a></td>
+    <td><a href="#crackme0x02">0x02</a></td>
+    <td><a href="#crackme0x03">0x03</a></td>
+    <td><a href="#crackme0x04">0x04</a></td>
+    <td><a href="#crackme0x05">0x05</a></td>
+  </tr>
+</tbody>
+<tbody>
+  <tr>
+    <td><a href="#crackme0x06">0x06</a></td>
+    <td><a href="#crackme0x07">0x07</a></td>
+    <td><a href="#crackme0x08">0x08</a></td>
+    <td><a href="#crackme0x09">0x09</a></td>
+    <td><a href="#"></a></td>
+  </tr>
+</tbody>
+</table>
+
 ### crackme0x00a
 
 ```bash
@@ -169,7 +198,7 @@ Sdvvzrug#RN$$$#=, => Password~OK!!!~:)
 Lqydolg#Sdvvzrug$ => Invalid~Password!
 ```
 
-判断输入是否与 *338724* 相等，*338724* 即是正确答案
+判断输入是否与 *338724* 相等，*338724* 即是 Level 0x03 的密码
 
 ```bash
 $ ./crackme0x03
@@ -177,3 +206,195 @@ IOLI Crackme Level 0x03
 Password: 338724
 Password OK!!! :)
 ```
+
+### crackme0x04
+
+```bash
+$ file crackme0x04
+crackme0x04: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux.so.2, for GNU/Linux 2.6.9, not stripped
+$ ./crackme0x04
+IOLI Crackme Level 0x04
+Password: 123
+Password Incorrect!
+```
+
+使用 IDA Pro 将汇编代码还原成伪代码查看，发现调用了函数`check`来检查输入的字符串<br>
+![check(&s)](img/0x04-main.jpg)<br>
+![密码为各位数之和为 15 的数](img/0x04-check.jpg)
+
+```bash
+$ ./crackme0x04
+IOLI Crackme Level 0x04
+Password: 78
+Password OK!
+
+$ ./crackme0x04
+IOLI Crackme Level 0x04
+Password: 3444
+Password OK!
+```
+
+### crackme0x05
+
+```bash
+$ file crackme0x05
+crackme0x05: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux.so.2, for GNU/Linux 2.6.9, not stripped
+$ ./crackme0x05
+IOLI Crackme Level 0x05
+Password: 1234
+Password Incorrect!
+```
+
+使用 IDA Pro 将汇编代码还原成伪代码查看，发现调用了函数`check`来检查输入的字符串<br>
+![check(&s)](img/0x05-main.jpg)
+
+```c
+int __cdecl check(char *s)
+{
+  size_t v1; // eax
+  char v3; // [esp+1Bh] [ebp-Dh]
+  unsigned int i; // [esp+1Ch] [ebp-Ch]
+  int v5; // [esp+20h] [ebp-8h]
+  int v6; // [esp+24h] [ebp-4h]
+
+  v5 = 0;
+  for ( i = 0; ; ++i )
+  {
+    v1 = strlen(s);
+    if ( i >= v1 )
+      break;
+    v3 = s[i];
+    sscanf(&v3, "%d", &v6);
+    v5 += v6;
+    if ( v5 == 16 ) // 各位数之和为 16
+      parell(s);
+  }
+  return printf("Password Incorrect!\n");
+}
+
+int __cdecl parell(char *s)
+{
+  int result; // eax
+  int v2; // [esp+14h] [ebp-4h]
+
+  sscanf(s, "%d", &v2);
+  result = v2 & 1;
+  if ( !(v2 & 1) )  // 偶数
+  {
+    printf("Password OK!\n");
+    exit(0);
+  }
+  return result;
+}
+```
+
+各位数之和为 16 的偶数即为 Level 0x05 的密码
+
+```bash
+$ ./crackme0x05
+IOLI Crackme Level 0x05
+Password: 88
+Password OK!
+
+$ ./crackme0x05
+IOLI Crackme Level 0x05
+Password: 4444
+Password OK!
+```
+
+### crackme0x06
+
+```bash
+$ file crackme0x06
+crackme0x06: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux.so.2, for GNU/Linux 2.6.9, not stripped
+$ ./crackme0x06
+IOLI Crackme Level 0x06
+Password: 1234
+Password Incorrect!
+```
+
+使用 IDA Pro 将汇编代码还原成伪代码查看，发现调用了函数`check`，传入的参数包括输入的字符串以及环境变量<br>
+![check(&s, (int)envp)](img/0x06-main.jpg)
+
+```c
+int __cdecl check(char *s, int a2)
+{
+  size_t v2; // eax
+  char v4; // [esp+1Bh] [ebp-Dh]
+  unsigned int i; // [esp+1Ch] [ebp-Ch]
+  int v6; // [esp+20h] [ebp-8h]
+  int v7; // [esp+24h] [ebp-4h]
+
+  v6 = 0;
+  for ( i = 0; ; ++i )
+  {
+    v2 = strlen(s);
+    if ( i >= v2 )
+      break;
+    v4 = s[i];
+    sscanf(&v4, "%d", &v7);
+    v6 += v7;
+    if ( v6 == 16 ) // 各位数之和为 16
+      parell(s, a2);
+  }
+  return printf("Password Incorrect!\n");
+}
+
+int *__cdecl parell(char *s, int a2)
+{
+  int *result; // eax
+  int i; // [esp+10h] [ebp-8h]
+  int v4; // [esp+14h] [ebp-4h]
+
+  sscanf(s, "%d", &v4);
+  result = (int *)dummy(v4, a2);
+  if ( result )
+  {
+    for ( i = 0; i <= 9; ++i )
+    {
+      if ( !(v4 & 1) )  // 偶数
+      {
+        printf("Password OK!\n");
+        exit(0);
+      }
+      result = &i;
+    }
+  }
+  return result;
+}
+
+signed int __cdecl dummy(int a1, int a2)
+{
+  int v2; // ecx
+  int v5; // [esp+14h] [ebp-4h]
+
+  // envp[i] = "NAME=value"
+  v5 = 0;
+  while ( *(_DWORD *)(4 * v5 + a2) )
+  {
+    v2 = 4 * v5++;
+    // 查找是否有命名以 LOL 开头的环境变量，成功找到返回 1
+    if ( !strncmp(*(const char **)(v2 + a2), "LOLO", 3u) )
+      return 1;
+  }
+  return 0;
+}
+```
+
+需要一个各位数之和为 16 的偶数以及一个命名以 LOL 开头的环境变量（值随意），可通过`export`定义环境变量，但不必要
+
+`NAME=value command`可创建一个作用域仅为执行该命令进程的环境变量
+
+```bash
+$ LOL=1 ./crackme0x06
+IOLI Crackme Level 0x06
+Password: 88
+Password OK!
+
+$ LOLABCD=1 ./crackme0x06
+IOLI Crackme Level 0x06
+Password: 88
+Password OK!
+```
+
+参考：[environ(7) — Linux manual page](https://man7.org/linux/man-pages/man7/environ.7.html)
