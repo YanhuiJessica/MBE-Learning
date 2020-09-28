@@ -350,7 +350,7 @@ int *__cdecl parell(char *s, int a2)
   result = (int *)dummy(v4, a2);
   if ( result )
   {
-    for ( i = 0; i <= 9; ++i )
+    for ( i = 0; i <= 9; ++i )  // 不能超过 10 个数字
     {
       if ( !(v4 & 1) )  // 偶数
       {
@@ -381,12 +381,27 @@ signed int __cdecl dummy(int a1, int a2)
 }
 ```
 
-需要一个各位数之和为 16 的偶数以及一个命名以 LOL 开头的环境变量（值随意），可通过`export`定义环境变量，但不必要
+需要一个各位数之和为 16 且长度不超过 10 个数字的偶数以及一个命名以 LOL 开头的环境变量（值随意）
 
-`NAME=value command`可创建一个作用域仅为执行该命令进程的环境变量
+可通过`export`定义环境变量，但不必要。`NAME=value command`可创建一个作用域仅为执行该命令进程的环境变量
 
 ```bash
 $ LOL=1 ./crackme0x06
+IOLI Crackme Level 0x06
+Password: 88
+Password OK!
+
+$ LOL=1 ./crackme0x06
+IOLI Crackme Level 0x06
+Password: 1111222222
+Password OK!
+
+$ LOL=1 ./crackme0x06
+IOLI Crackme Level 0x06
+Password: 111111111111112
+Password Incorrect!
+
+$ LOL= ./crackme0x06
 IOLI Crackme Level 0x06
 Password: 88
 Password OK!
@@ -398,3 +413,205 @@ Password OK!
 ```
 
 参考：[environ(7) — Linux manual page](https://man7.org/linux/man-pages/man7/environ.7.html)
+
+### crackme0x07
+
+```bash
+$ file crackme0x07
+crackme0x07: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux.so.2, for GNU/Linux 2.6.9, stripped
+$ ./crackme0x07
+IOLI Crackme Level 0x07
+Password: 1234
+Password Incorrect!
+```
+
+使用 IDA Pro 将汇编代码还原成伪代码查看，发现调用了一个函数，传入的参数包括输入的字符串以及环境变量<br>
+![sub_80485B9(&s, (int)a3)](img/0x07-main.jpg)
+
+```c
+void __cdecl __noreturn sub_80485B9(char *s, int a2)
+{
+  size_t v2; // eax
+  char v3; // [esp+1Bh] [ebp-Dh]
+  unsigned int i; // [esp+1Ch] [ebp-Ch]
+  int v5; // [esp+20h] [ebp-8h]
+  int v6; // [esp+24h] [ebp-4h]
+
+  v5 = 0;
+  for ( i = 0; ; ++i )
+  {
+    v2 = strlen(s);
+    if ( i >= v2 )
+      break;
+    v3 = s[i];
+    sscanf(&v3, "%d", &v6);
+    v5 += v6;
+    if ( v5 == 16 ) // 各位数之和为 16
+      sub_8048542(s, a2);
+  }
+  sub_8048524();
+}
+
+void __noreturn sub_8048524()
+{
+  printf("Password Incorrect!\n");
+  exit(0);
+}
+
+int *__cdecl sub_8048542(char *s, int a2)
+{
+  int *result; // eax
+  int i; // [esp+10h] [ebp-8h]
+  int v4; // [esp+14h] [ebp-4h]
+
+  sscanf(s, "%d", &v4);
+  result = (int *)sub_80484B4(v4, a2);
+  if ( result )
+  {
+    for ( i = 0; i <= 9; ++i )  // 不能超过 10 个数字
+    {
+      if ( !(v4 & 1) )  // 偶数
+      {
+        if ( dword_804A02C == 1 )
+          printf("Password OK!\n");
+        exit(0);
+      }
+      result = &i;
+    }
+  }
+  return result;
+}
+
+signed int __cdecl sub_80484B4(int a1, int a2)
+{
+  int v2; // ecx
+  int v5; // [esp+14h] [ebp-4h]
+
+  v5 = 0;
+  while ( *(_DWORD *)(4 * v5 + a2) )
+  {
+    v2 = 4 * v5++;
+    // 查找是否有命名以 LOL 开头的环境变量，成功找到返回 1
+    if ( !strncmp(*(const char **)(v2 + a2), "LOLO", 3u) )
+    {
+      dword_804A02C = 1;  // 全局变量
+      return 1;
+    }
+  }
+  return 0;
+}
+```
+
+与 [crackme0x06](#crackme0x06) 相比，crackme0x07 函数数量增加，并且剥掉了符号信息和调试信息（stripped），因此伪代码中没有特定的函数名
+
+```bash
+# 实际运行效果与 crackme0x06 一致
+$ LOL=1 ./crackme0x07
+IOLI Crackme Level 0x07
+Password: 88
+Password OK!
+```
+
+使用 *Shift + F12* 调出 *Strings window* 查看，发现输出字符串还有一个`wtf?\n`<br>
+![wtf?\n](img/0x07-wtf.jpg)
+事实上，在不改动的情况下，这部分输出`wtf?\n`的代码并不会被执行<br>
+![不修改的情况下，不会输出 wtf?\n](img/0x07-not-exe.jpg)
+
+### crackme0x08
+
+```bash
+$ file crackme0x08
+crackme0x08: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux.so.2, for GNU/Linux 2.6.9, not stripped
+$ ./crackme0x08
+IOLI Crackme Level 0x08
+Password: 1234
+Password Incorrect!
+```
+
+使用 IDA Pro 将汇编代码还原成伪代码查看，发现调用了函数`check`，传入参数包括输入的字符串以及环境变量<br>
+![check(&s, (int)envp)](img/0x08-main.jpg)
+
+```c
+void __cdecl __noreturn check(char *s, int a2)
+{
+  size_t v2; // eax
+  char v3; // [esp+1Bh] [ebp-Dh]
+  unsigned int i; // [esp+1Ch] [ebp-Ch]
+  int v5; // [esp+20h] [ebp-8h]
+  int v6; // [esp+24h] [ebp-4h]
+
+  v5 = 0;
+  for ( i = 0; ; ++i )
+  {
+    v2 = strlen(s);
+    if ( i >= v2 )
+      break;
+    v3 = s[i];
+    sscanf(&v3, "%d", &v6);
+    v5 += v6;
+    if ( v5 == 16 ) // 各位数之和为 16
+      parell(s, a2);
+  }
+  che();
+}
+
+void __noreturn che()
+{
+  printf("Password Incorrect!\n");
+  exit(0);
+}
+
+int *__cdecl parell(char *s, int a2)
+{
+  int *result; // eax
+  int i; // [esp+10h] [ebp-8h]
+  int v4; // [esp+14h] [ebp-4h]
+
+  sscanf(s, "%d", &v4);
+  result = (int *)dummy(v4, a2);
+  if ( result )
+  {
+    for ( i = 0; i <= 9; ++i )  // 不能超过 10 个数字
+    {
+      if ( !(v4 & 1) )  // 偶数
+      {
+        if ( LOL == 1 )
+          printf("Password OK!\n");
+        exit(0);
+      }
+      result = &i;
+    }
+  }
+  return result;
+}
+
+signed int __cdecl dummy(int a1, int a2)
+{
+  int v2; // ecx
+  int v5; // [esp+14h] [ebp-4h]
+
+  v5 = 0;
+  while ( *(_DWORD *)(4 * v5 + a2) )
+  {
+    v2 = 4 * v5++;
+    // 查找是否有命名以 LOL 开头的环境变量，成功找到返回 1，
+    // 全局变量 LOL 置为 1
+    if ( !strncmp(*(const char **)(v2 + a2), "LOLO", 3u) )
+    {
+      LOL = 1;
+      return 1;
+    }
+  }
+  return 0;
+}
+```
+
+crackme0x08 就是 [crackme0x07](#crackme0x07) 的 not-stripped 版本
+
+```bash
+# 实际运行效果与 crackme0x07 一致
+$ LOL=1 ./crackme0x08
+IOLI Crackme Level 0x08
+Password: 88
+Password OK!
+```
