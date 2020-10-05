@@ -514,7 +514,8 @@ Password OK!
 
 使用 *Shift + F12* 调出 *Strings window* 查看，发现输出字符串还有一个`wtf?\n`<br>
 ![wtf?\n](img/0x07-wtf.jpg)
-事实上，在不改动的情况下，这部分输出`wtf?\n`的代码并不会被执行<br>
+
+事实上，在进行不改动的情况下，这部分输出`wtf?\n`的代码因为没有被调用而不会被执行<br>
 ![不修改的情况下，不会输出 wtf?\n](img/0x07-not-exe.jpg)
 
 ### crackme0x08
@@ -612,6 +613,111 @@ crackme0x08 就是 [crackme0x07](#crackme0x07) 的 not-stripped 版本
 # 实际运行效果与 crackme0x07 一致
 $ LOL=1 ./crackme0x08
 IOLI Crackme Level 0x08
+Password: 88
+Password OK!
+
+$ ./crackme0x08
+IOLI Crackme Level 0x08
+Password: 88
+Password Incorrect!
+```
+
+### crackme0x09
+
+```bash
+$ file crackme0x09
+crackme0x09: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux.so.2, for GNU/Linux 2.6.9, stripped
+$ ./crackme0x09
+IOLI Crackme Level 0x09
+Password: 1234
+Password Incorrect!
+```
+
+使用 IDA Pro 将汇编代码还原成伪代码查看，发现调用了一个函数，传入参数包括输入的字符串以及环境变量<br>
+![sub_8048616](img/0x09-main.jpg)
+
+```c
+void __cdecl __noreturn sub_8048616(char *s, int a2)
+{
+  size_t v2; // eax
+  char v3; // [esp+17h] [ebp-11h]
+  unsigned int i; // [esp+18h] [ebp-10h]
+  int v5; // [esp+1Ch] [ebp-Ch]
+  int v6; // [esp+20h] [ebp-8h]
+
+  v5 = 0;
+  for ( i = 0; ; ++i )
+  {
+    v2 = strlen(s);
+    if ( i >= v2 )
+      break;
+    v3 = s[i];
+    sscanf(&v3, "%d", &v6);
+    v5 += v6;
+    if ( v5 == 16 ) // 各位数之和为 16
+      sub_8048589(s, a2);
+  }
+  sub_804855D();
+}
+
+void __noreturn sub_804855D()
+{
+  printf("Password Incorrect!\n");
+  exit(0);
+}
+
+int *__cdecl sub_8048589(char *s, int a2)
+{
+  int *result; // eax
+  int i; // [esp+Ch] [ebp-Ch]
+  int v4; // [esp+10h] [ebp-8h]
+
+  sscanf(s, "%d", &v4);
+  result = (int *)sub_80484D4(v4, a2);
+  if ( result )
+  {
+    for ( i = 0; i <= 9; ++i )
+    {
+      if ( !(v4 & 1) )
+      {
+        if ( LOL == 1 )
+          printf("Password OK!\n");
+        exit(0);
+      }
+      result = &i;
+    }
+  }
+  return result;
+}
+
+signed int __cdecl sub_80484D4(int a1, int a2)
+{
+  int v2; // edx
+  int v4; // [esp+10h] [ebp-8h]
+
+  v4 = 0;
+  // while 循环变为 do while 循环
+  do
+  {
+    if ( !*(_DWORD *)(4 * v4 + a2) )
+      exit(-1); // 直接退出，不输出错误信息
+    v2 = 4 * v4++;
+  }
+  while ( strncmp(*(const char **)(v2 + a2), "LOLO", 3u) );
+  LOL = 1;
+  return 1;
+}
+```
+
+除了剥掉了符号信息和调试信息以外，crackme0x09 与 [crackme0x08](#crackme0x08) 的区别仅在于查找环境变量的循环，当存在指定环境变量且口令正确时，实际运行效果一致；当口令正确但不存在指定环境变量时，程序直接退出且无错误提示
+
+```bash
+$ ./crackme0x09
+IOLI Crackme Level 0x09
+Password: 88
+
+$ LOL=1 ./crackme0x09
+IOLI Crackme Level 0x09
 Password: 88
 Password OK!
 ```
